@@ -9,8 +9,8 @@ from activation import sigmoid_f, tanh_f
 
 class layer:
     def __init__(self, x_d, y_d, **kwargs):
-        self.W = np.ones((y_d, x_d))
-        #self.W = np.random.randn(y_d, x_d)
+        #self.W = np.ones((y_d, x_d))
+        self.W = np.random.randn(y_d, x_d)
         self.f, self.df = kwargs['activation']
         self.net = None
         self.x = None
@@ -62,10 +62,10 @@ class NeuralNet:
         return matrix
 
 
-    def _backward(self, dk, j):
+    def _backward(self, wTd_next, j):
         if j >= 0:
             l = self.layers[j]
-            dj = np.multiply(dk, l.df_net())
+            dj = np.multiply(wTd_next, l.df_net())
             dW = self.cross(dj, l.x)
             wTd = l.W.T.dot(dj.T)
             #wTd = l.W.T.dot(dk.T)
@@ -79,10 +79,10 @@ class NeuralNet:
 
 if __name__ == '__main__':
     N = NeuralNet()
-    N.add_layer(2, 3, activation=tanh_f, eta=1e0)
+    N.add_layer(2, 3, activation=sigmoid_f, eta=1e0)
     N.add_layer(3, 2, activation=sigmoid_f, eta=1e0)
-    ip = np.array([1, 2])
-    op = np.array([0.02, 0.93])
+    ip = np.array([1, 0])
+    op = np.array([0.52,0.21])
     N.forward(ip)
     N.backward(op)
     for i in range(1000000):
