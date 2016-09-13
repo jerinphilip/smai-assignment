@@ -27,9 +27,6 @@ class layer:
     def df_net(self):
         return self.df(self.net)
 
-    def export_weights(self):
-        return {"W": self.W}
-
 
 class NeuralNet:
     def __init__(self, **kwargs):
@@ -76,6 +73,11 @@ class NeuralNet:
         op = self.layers[-1]
         dk = -(t-self.z)
         self._backward(dk, self.nlayers-1)
+
+    def export_net(self):
+        result = map(lambda x: x.W, self.layers)
+        return list(result)
+
 
 
 if __name__ == '__main__':
