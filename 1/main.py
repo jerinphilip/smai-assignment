@@ -23,9 +23,9 @@ def train_net(filename, maxIter):
     downsampled = map(downsample, processed)
     vectorized = list(map(vectorize, downsampled))
     N = NeuralNet()
-    N.add_layer(65, 20, activation=sigmoid_f, eta=1e0)
-    #N.add_layer(20, 20, activation=sigmoid_f, eta=1e0)
-    N.add_layer(20, 10, activation=sigmoid_f, eta=1e0)
+    N.add_layer(65, 32, activation=sigmoid_f, eta=1e0)
+    N.add_layer(32, 32, activation=sigmoid_f, eta=1e0)
+    N.add_layer(32, 10, activation=sigmoid_f, eta=2e0)
     total = len(vectorized)
     for i in range(maxIter):
         negatives = 0
@@ -50,10 +50,8 @@ def validate_net(N, filename):
     negatives = 0
     for (ip, op) in vectorized:
         N.forward(ip)
-        a,b = argmx(N.z), argmx(op)
-        if (a !=b):
-            negatives += 1
-            #print(a, b)
+        a, b = argmx(N.z), argmx(op)
+        if (a !=b): negatives += 1
     return (negatives, len(vectorized))
 
 
@@ -63,6 +61,6 @@ if __name__ == '__main__':
     parser = create_parser()
     args = parser.parse_args()
     # Return Neural Net learning from Input
-    N = train_net(args.train_set, 500)
+    N = train_net(args.train_set, 1000)
     negatives, total = validate_net(N, args.validation_set)
     print("Negatives: %d/%d"%(negatives, total))

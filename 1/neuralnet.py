@@ -27,8 +27,8 @@ class layer:
     def df_net(self):
         return self.df(self.net)
 
-    def export(self):
-        pass
+    def export_weights(self):
+        return {"W": self.W}
 
 
 class NeuralNet:
@@ -76,6 +76,7 @@ class NeuralNet:
         op = self.layers[-1]
         dk = -(t-self.z)
         self._backward(dk, self.nlayers-1)
+
 
 if __name__ == '__main__':
     N = NeuralNet()
