@@ -1,10 +1,9 @@
 import cv2
 import numpy as np
-import scipy as sp
 from scipy.misc import imresize
 from matplotlib import pyplot as plt
 from neuralnet import NeuralNet
-from activation import sigmoid_f
+from activation import sigmoid_f, tanh_f
 
 def process_chunk(chunk):
     """ process_chunk: String->(np.2darray, int) """
@@ -45,40 +44,4 @@ def argmx(l):
         if l[i] > l[mx]:
             mx = i
     return mx
-
-if __name__ == '__main__':
-    import sys
-    filename = sys.argv[1]
-    digits = open(filename, 'r')
-    processed = list(read_data(digits))
-    downsampled = map(downsample, processed)
-    vectorized = list(map(vectorize, downsampled))
-    N = NeuralNet()
-    N.add_layer(65, 20, activation=sigmoid_f, eta=1e0)
-    #N.add_layer(32, 20, activation=tpl, eta=1e1)
-    N.add_layer(20, 10, activation=sigmoid_f, eta=1e0)
-    total = len(vectorized)
-    #vectorized = vectorized[:1]
-    for i in range(100000):
-        negatives = 0
-        if (i+1)%100 == 0:
-            print("Iter", i+1)
-
-        counter = -1
-        for (ip, op) in vectorized:
-            counter += 1
-            N.forward(ip)
-            N.backward(op)
-            if (i+1)%100 == 0 or i<100:
-                a,b = argmx(op), argmx(N.z)
-                if a!=b: 
-                    print(a, "->", b)
-                    #plt.imshow(processed[counter][0], 'gray')
-                    #plt.imshow(ip.reshape(8, 8), cmap='gray')
-                    #plt.text(0, 0, "Orig %d, Id %d"%(a, b))
-                    #plt.show()
-                    negatives += 1
-
-        if (i+1)%100 == 0 or i<100:
-            print("Negatives:", negatives, "/", total)
 

@@ -8,11 +8,11 @@ from activation import sigmoid_f, tanh_f
 if __name__ == '__main__':
     from itertools import product
     N = NeuralNet()
-    np.random.seed(1)
+    #np.random.seed(1)
     #N.add_layer(2, 2, activation=sigmoid_f, eta=1e2)
     N.add_layer(3, 3, activation=sigmoid_f, eta=1e0)
     N.add_layer(3, 3, activation=sigmoid_f, eta=1e0)
-    N.add_layer(3, 3, activation=sigmoid_f, eta=1e2)
+    N.add_layer(3, 3, activation=sigmoid_f, eta=1e0)
     N.add_layer(3, 1, activation=sigmoid_f, eta=1e0)
 
     inputs = list(product([0, 1], [0, 1]))
