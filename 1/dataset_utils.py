@@ -33,7 +33,7 @@ def downsample(packed):
 def vectorize(packed):
     """ vectorize: [(np.2darray, int)] -> [(np.1darray, np.1darray)]"""
     img, value = packed
-    img = np.append([1.0], img.ravel().astype(np.float_))
+    img = img.ravel().astype(np.float_)
     #truth = np.zeros(10).astype(np.float_)
     #truth[value] = 1
     return (img, value)

@@ -49,8 +49,33 @@ def gradient_descent_single(ys, eta, a, b, J, threshold=0.000001):
                 misclassified = misclassified + 1
                 da = eta(k) * J.derivative(y, a, b)
                 a = a - da
-                if (np.linalg.norm(da) < threshold):
+                if (np.linalg.norm(da) <= threshold):
+                    print("Misclassified=", misclassified)
                     return a
+
+        if eq(misclassified, 0):
+            break
+
+    return a
+
+def widrow_hoff(ys, eta, a, b, J, threshold=0.00000001):
+    eta = lambda x: 2e0
+    k = 0
+    while True:
+        k = k+1
+        misclassified = 0
+        prev_a = a
+        for y in ys:
+            if y.dot(a.T) <= b: misclassified = misclassified + 1
+            da = eta(k) * (b - y.dot(a.T))
+            print(b - y.dot(a.T))
+            a = a - da * y
+            print(da, y)
+            #print(np.linalg.norm(da) ,threshold)
+            #print((np.linalg.norm(da) <threshold))
+            if (np.linalg.norm(da) <= threshold):
+                print("Misclassified=", misclassified)
+                return a
 
         if eq(misclassified, 0):
             break

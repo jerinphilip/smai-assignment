@@ -2,20 +2,20 @@ import numpy as np
 import sys
 
 def toLatexMatrix(W):
-    col = lambda x: ' & '.join(list(map(lambda y: "%0.2f"%(y), x)))
+    col = lambda x: ' & '.join(list(map(lambda y: "%0.6f"%(y), x)))
     rows = '\\\\\n'.join(list(map(col, W)))
     total = '\\begin{bmatrix}\n' + rows + '\n\\end{bmatrix}'
     return total
     #print(W)
 
-def toLatexTable(W):
+def toLatexTable(W, precision):
     m, n = W.shape
-    start = '\\begin{tabular}{'+'c'.join((['|']*(n+1)))+'}'
+    start = '\\begin{longtable}{'+'c'.join((['|']*(n+1)))+'}'
     hline = '\\hline '
     nline = '\\\\ '
-    cols = lambda x: ' & '.join(list(map(lambda y: "%0.2f"%(y), x)))
+    cols = lambda x: ' & '.join(list(map(lambda y: precision%(y), x)))
     rows = (nline + hline + '\n').join(list(map(cols, W)))
-    end = '\\end{tabular}'
+    end = '\\end{longtable}'
     lines = [start, hline, rows+nline, hline, end]
     output = '\n'.join(lines)
     return output
@@ -25,7 +25,7 @@ def toLatexTable(W):
 def toEquation(packed):
     i, W = packed
     m, n = W.shape
-    mname = "W_{%d%d}"%(i+2, i+1)
+    mname = "$W_{%d%d}$"%(i+2, i+1)
     if m < n:
         W = W.T
         lW = W.tolist()
@@ -42,8 +42,10 @@ def toSubSection(packed):
         W = W.T
         lW = W.tolist()
         mname += '^\\mathsf{T}'
-    subsection = '\\subsubsection{%s}\n'%(mname)
-    content = toLatexTable(W)
+    subsection = '\\subsubsection{$%s$}\n'%(mname)
+    d = int(55/(min(m, n)+2))
+    precision = "%%0.%df"%(d)
+    content = toLatexTable(W, precision)
     return subsection + '\n' + content
 
 def extract_neurons(WS):

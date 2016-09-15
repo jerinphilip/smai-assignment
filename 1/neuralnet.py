@@ -10,7 +10,7 @@ from activation import sigmoid_f, tanh_f
 class layer:
     def __init__(self, x_d, y_d, **kwargs):
         #self.W = np.ones((y_d, x_d))
-        self.W = np.random.randn(y_d, x_d)
+        self.W = np.random.randn(y_d, x_d+1)
         self.f, self.df = kwargs['activation']
         self.net = None
         self.x = None
@@ -19,8 +19,9 @@ class layer:
         self.eta = kwargs['eta']
 
     def compute(self, x):
-        self.x = x
-        self.net = self.W.dot(x.T)
+        #1 for the extra bias, god save me
+        self.x = np.append([1], x)
+        self.net = self.W.dot(self.x.T)
         self.y = self.f(self.net)
         return self.y
     
@@ -61,13 +62,14 @@ class NeuralNet:
 
     def _backward(self, wTd_next, j):
         if j >= 0:
+            #print("Layer", j)
             l = self.layers[j]
             dj = np.multiply(wTd_next, l.df_net())
             dW = self.cross(dj, l.x)
             wTd = l.W.T.dot(dj.T)
             #wTd = l.W.T.dot(dk.T)
             l.W = l.W - l.eta * dW
-            self._backward(wTd, j-1)
+            self._backward(wTd[1:], j-1)
 
     def backward(self, t):
         op = self.layers[-1]
@@ -76,6 +78,7 @@ class NeuralNet:
 
     def export_net(self):
         result = map(lambda x: x.W, self.layers)
+        #print(list(result))
         return list(result)
 
 

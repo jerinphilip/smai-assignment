@@ -22,6 +22,18 @@ def onehot(x, m):
     y[x] = 1.0
     return y
 
+def binary(x, l):
+    bstr = bin(x)[2:]
+    length = len(bstr)
+    padding = (l-length)*'0'
+    binform = list(map(int, padding+bstr))
+    return np.array(binform).astype(np.float_)
+
+def bin2dec(x):
+    y = np.rint(x).astype(np.integer).tolist()
+    bstr = ''.join(list(map(str, y)))
+    return int(bstr, 2)
+
 
 def train_net(filename, maxIter, nH, digits):
     digits_file = open(filename, 'r')
@@ -31,7 +43,7 @@ def train_net(filename, maxIter, nH, digits):
     filtered = list(filter(lambda x: x[1] in digits, vectorized))
     #Input output dimensions
     m = len(filtered[0][0])
-    p = len(digits)
+    p = len(bin(len(digits)))-2
 
     N = NeuralNet()
 
@@ -47,10 +59,12 @@ def train_net(filename, maxIter, nH, digits):
         for (ip, op) in filtered:
             counter += 1
             N.forward(ip)
-            opv = onehot(digits.index(op), p)
+            #opv = onehot(digits.index(op), p)
+            opv = binary(digits.index(op), p)
+            #print(digits.index(op), opv)
             N.backward(opv)
             error += np.sum(np.square((opv - N.z)))
-        print("Error:", error)
+        print("Iteration %d, Error:"%(i), error)
 
     return N
 
@@ -63,7 +77,12 @@ def validate_net(N, filename, digits):
     negatives = 0
     for (ip, op) in filtered:
         N.forward(ip)
-        a, b = digits[argmx(N.z)], op
+        #a, b = digits[argmx(N.z)], op
+        
+        if bin2dec(N.z) < len(digits):
+            a, b = digits[bin2dec(N.z)], op
+        else:
+            a, b = -1, op
         if (a !=b): negatives += 1
     return (negatives, len(filtered))
 
@@ -75,8 +94,10 @@ if __name__ == '__main__':
     args = parser.parse_args()
     # The answer to life, universe and everything.
     np.random.seed(42)
-    digits = [3, 4, 5]
-    N = train_net(args.train_set, 100, 10, digits)
+    #digits = [3, 4, 5]
+    digits = [1, 4, 6]
+    #digits = list(range(10))
+    N = train_net(args.train_set, 200, 8, digits)
     negatives, total = validate_net(N, args.validation_set, digits)
     print("Negatives: %d/%d"%(negatives, total))
     np.save("weights", N.export_net())
