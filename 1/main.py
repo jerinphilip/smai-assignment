@@ -3,6 +3,12 @@ from dataset_utils import read_data, downsample, vectorize, argmx
 from neuralnet import NeuralNet
 from activation import sigmoid_f, tanh_f
 import numpy as np
+from sklearn.decomposition import PCA
+from sklearn.cluster import KMeans
+from matplotlib import pyplot as plt
+import matplotlib.colors
+from functools import partial, reduce
+import random
 
 def create_parser():
     arguments = [
@@ -48,6 +54,7 @@ def train_net(filename, maxIter, nH, digits):
     N = NeuralNet()
 
     N.add_layer(m, nH, activation=sigmoid_f, eta=2e0)
+    #N.add_layer(nH, nH, activation=sigmoid_f, eta=2e0)
     N.add_layer(nH, p, activation=sigmoid_f, eta=2e0)
     total = len(filtered)
     for i in range(maxIter):
@@ -75,6 +82,8 @@ def validate_net(N, filename, digits):
     vectorized = list(map(vectorize, downsampled))
     filtered = list(filter(lambda x: x[1] in digits, vectorized))
     negatives = 0
+    export = []
+
     for (ip, op) in filtered:
         N.forward(ip)
         #a, b = digits[argmx(N.z)], op
@@ -83,10 +92,52 @@ def validate_net(N, filename, digits):
             a, b = digits[bin2dec(N.z)], op
         else:
             a, b = -1, op
+        export.append((a, b, N.layers[1].x))
         if (a !=b): negatives += 1
-    return (negatives, len(filtered))
 
+    return (negatives, len(filtered), export)
 
+def visualize(exported):
+    obtained, expected, ys = list(zip(*exported))
+    length = len(obtained)
+    pca = PCA(n_components=2)
+    ys_t = pca.fit_transform(ys)
+    ys_table = [[] for i in range(length)]
+    for i in range(length):
+        ys_table[expected[i]].append(ys_t[i,:])
+
+    colors = list(matplotlib.colors.cnames.values()) 
+    random.shuffle(colors)
+        
+    for i in range(length):
+        if ys_table[i]:
+            ys_i = np.array(ys_table[i])
+            plt.scatter(ys_i[:,0], ys_i[:, 1], c=colors[i], marker='x', s=100)
+
+    centers = [np.ones(2) for i in range(length)]
+    for i in range(length):
+        if(ys_table[i]):
+            centers[i] = np.sum(ys_table[i], axis=0)/len(ys_table[i])
+    centers = np.array(centers)
+
+    n_digits = len(set(expected))
+    kmeans = KMeans(init='k-means++', n_clusters=n_digits, n_init=10)
+    kmeans.fit(ys_t)
+    #ys_kpt = K.fit_predict(np.array(ys_t))dd
+    centroids = kmeans.cluster_centers_
+    centroids = centers
+    for i in range(length):
+        if ys_table[i]:
+            x, y = centroids[i]
+            plt.scatter(x, y, marker='o', s=400, linewidths=10, color=colors[i], zorder=10)
+            plt.annotate(
+		str(i), xy = (x, y), xytext = (-20, 20),
+		textcoords = 'offset points', ha = 'right', va = 'bottom',
+		bbox = dict(boxstyle = 'round,pad=0.5', fc = 'yellow', alpha = 0.5),
+		arrowprops = dict(arrowstyle = '->', connectionstyle = 'arc3,rad=0'))
+
+    plt.show()
+    
 
 
 if __name__ == '__main__':
@@ -95,11 +146,12 @@ if __name__ == '__main__':
     # The answer to life, universe and everything.
     np.random.seed(42)
     #digits = [3, 4, 5]
-    digits = [1, 4, 6]
-    #digits = list(range(10))
-    N = train_net(args.train_set, 200, 8, digits)
-    negatives, total = validate_net(N, args.validation_set, digits)
+    digits = list(range(10))
+    N = train_net(args.train_set, 60, 64, digits)
+    negatives, total, exported = validate_net(N, args.validation_set, digits)
     print("Negatives: %d/%d"%(negatives, total))
     np.save("weights", N.export_net())
+    visualize(exported)
+    #cluster(exported)
 
 
